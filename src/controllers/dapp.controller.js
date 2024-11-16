@@ -61,7 +61,7 @@ const updateDappForm = catchAsync(async (req, res) => {
       { transactionHash: formData.data.transaction.txHash, status: status, productID: formData.data.event.inputs[0].value }
     );
   } else {
-    const productID = formData.data.event.inputs[0].value;
+    const productID = parseInt(formData.data.event.inputs[0].value);
     await DappContract.updateOne(
       { productID: productID, chainID: chainID },
       { transactionHash: formData.data.transaction.txHash, status: status }
