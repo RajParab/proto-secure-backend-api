@@ -1,11 +1,11 @@
 const express = require('express');
-const transactionRoute = require('./transaction.route');
+const dappRoute = require('./dapp.route');
 const router = express.Router();
 
 const defaultRoutes = [
   {
     path: '/api',
-    route: transactionRoute, //User Route
+    route: dappRoute, //User Route
   }
 ];
 
