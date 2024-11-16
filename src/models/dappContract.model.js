@@ -16,6 +16,10 @@ const dappContractSchema = mongoose.Schema(
       type: String,
       default: null
     },
+    email:{
+      type: String,
+      default:null,
+    },
     logoURL: {
       type: String,
       default: null

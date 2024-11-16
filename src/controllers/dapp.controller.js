@@ -1,10 +1,12 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { DappContract } = require('../models');
+const { generateGUID } = require('../helpers/CommonHelper');
 
 const PROJECT_STATUS = {
   ACTIVE: 'active',
-  INACTIVE: 'inactive',
+  SUSPENDED: 'suspended',
+  RETIRED: 'retired',
 };
 
 const MAINTAINER_ENUM = {
@@ -21,24 +23,23 @@ const addProjectForm = catchAsync(async (req, res) => {
     }
 
     const findIfExists = await DappContract.find({ guid: formData.guid });
-    console.log(findIfExists);
     if (findIfExists.length > 0) {
       return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Already exists' });
     }
-
+    const guid = generateGUID();
     const createProject = await DappContract.create({
-      guid: formData.guid,
+      guid: guid,
       projectName: formData.projectName,
       logoURL: formData.logoURL,
       bountyAmt: formData.bountyAmt,
       tokenSymbol: formData.tokenSymbol,
       mediatator: formData.mediatator,
       status: formData.status,
+      email: formData.email,
     });
 
-    console.log(createProject);
     if (createProject) {
-      return res.status(httpStatus.OK).json({ message: 'Project Added Successfully' });
+      return res.status(httpStatus.OK).json(guid);
     }
   } catch (e) {
     console.log(e.message);
@@ -58,11 +59,28 @@ const updateDappForm = catchAsync(async (req, res) => {
 
   const updateForm = await DappContract.updateOne(
     { guid: formData.guid },
-    { transactioHash: formData.transactioHash, contractAddress: formData.contractAddress, chainID: formData.chainID }
+    { transactionHash: formData.transactionHash, contractAddress: formData.contractAddress, chainID: formData.chainID }
   );
 
   if (updateForm) {
     return res.status(httpStatus.OK).json({ message: 'Update Succuessful' });
+  }
+});
+
+const changeStatus = catchAsync(async (req, res) => {
+  const contractBody = req.body.contractBody;
+
+  if (contractBody.transactionHash) {
+    const udpateStatus = await DappContract.updateOne(
+      { transactionHash: contractBody },
+      {
+        status: contractBody.status,
+      }
+    );
+
+    if (udpateStatus) {
+      return req.status(httpStatus.OK).json({ message: 'Update Status Successfully' });
+    }
   }
 });
 
@@ -81,4 +99,5 @@ module.exports = {
   addProjectForm,
   updateDappForm,
   listDapps,
+  changeStatus,
 };
