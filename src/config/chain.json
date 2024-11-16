@@ -1,0 +1,63 @@
+[
+    {
+        "networkName": "base",
+        "chainID":8453,
+        "baseToken": "ETH",
+        "decimals":18,
+        "rpc": "https://base-pokt.nodies.app",
+        "feedaddress": "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70",
+        "routerContract":"0x962aFaAc50017cA191EE362B60aA137D9BBD2850",
+        "liquidityPool":"0xB127256729cD60988f681eFe4522aB1E30619e59",
+        "platformFeePercentage":2,
+        "gweiLimit":100000,
+        "isGasByLifi":true,
+        "minimumGas":0.0001,
+        "explorer":"https://basescan.org/tx/"
+    },
+    {
+        "networkName": "arbitrum",
+        "chainID":42161,
+        "baseToken": "ETH",
+        "decimals":18,
+        "rpc": "https://arb-pokt.nodies.app",
+        "feedaddress": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612",
+        "routerContract":"0x962aFaAc50017cA191EE362B60aA137D9BBD2850",
+        "liquidityPool":"0xB127256729cD60988f681eFe4522aB1E30619e59",
+        "platformFeePercentage":2,
+        "gweiLimit":400000,
+        "isGasByLifi":true,
+        "minimumGas":0.0001,
+        "explorer":"https://arbiscan.io/tx/"
+    },
+    {
+        "networkName": "scroll",
+        "chainID":534352,
+        "baseToken": "ETH",
+        "decimals":18,
+        "rpc": "https://rpc.scroll.io",
+        "feedaddress": "0x6bF14CB0A831078629D993FDeBcB182b21A8774C",
+        "routerContract":"0x962aFaAc50017cA191EE362B60aA137D9BBD2850",
+        "liquidityPool":"0xB127256729cD60988f681eFe4522aB1E30619e59",
+        "platformFeePercentage":2,
+        "gweiLimit":400000,
+        "isGasByLifi":true,
+        "minimumGas":0.001,
+        "explorer":"https://scrollscan.com/tx/"
+    },
+    {
+        "networkName": "mantle",
+        "chainID":5000,
+        "baseToken": "MNT",
+        "decimals":18,
+        "rpc": "https://rpc.mantle.xyz",
+        "feedaddress": "0x0000000000000000000000000000000000000000",
+        "priceProvider":"https://api.bybit.com/v5/market/tickers?category=spot&symbol=MNTUSDT",
+        "routerContract":"0x962aFaAc50017cA191EE362B60aA137D9BBD2850",
+        "liquidityPool":"0xB127256729cD60988f681eFe4522aB1E30619e59",
+        "platformFeePercentage":2,
+        "gweiLimit":500000000,
+        "isGasByLifi":false,
+        "minimumGas":0.001,
+        "explorer":"https://mantlescan.info/tx/"
+    }
+]
