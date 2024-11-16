@@ -57,13 +57,14 @@ const updateDappForm = catchAsync(async (req, res) => {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'Error: Invalid Form' });
   }
 
-  const findIfExists = await DappContract.find({ contractAddress: formData.data.event.contract.address });
+  const contractAddress = formData.data.event.inputs[1].value
+  const findIfExists = await DappContract.find({ contractAddress: contractAddress });
   if (findIfExists.length == 0) {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Dowsnt exists' });
   }
 
   const updateForm = await DappContract.updateOne(
-    { contractAddress: formData.data.event.contract.address, chainID: chainID },
+    { contractAddress: contractAddress, chainID: chainID },
     { transactionHash: formData.data.transaction.txHash, status: status }
   );
 
@@ -77,10 +78,11 @@ const changeStatus = catchAsync(async (req, res) => {
   const chainID = req.params.chainID;
 
   console.log(contractBody);
+  const contractAddress = formData.data.event.inputs[1].value
   const status = determineStatus(contractBody.data.event.name);
   if (contractBody.data.transaction.txHash) {
     const udpateStatus = await DappContract.updateOne(
-      { contractAddress: contractBody.data.event.contract.address, chainID: parseInt(chainID) },
+      { contractAddress: contractAddress, chainID: parseInt(chainID) },
       {
         transactionHash: contractBody.data.transaction.txHash,
         status: status,
