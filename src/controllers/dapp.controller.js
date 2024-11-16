@@ -64,7 +64,7 @@ const updateDappForm = catchAsync(async (req, res) => {
 
   const updateForm = await DappContract.updateOne(
     { contractAddress: contractAddress, chainID: chainID },
-    { transactionHash: formData.data.transaction.txHash, status: status }
+    { transactionHash: formData.data.transaction.txHash, status: status, productID: formData.data.event.inputs[0].value }
   );
 
   if (updateForm) {

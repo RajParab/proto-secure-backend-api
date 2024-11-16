@@ -12,6 +12,10 @@ const dappContractSchema = mongoose.Schema(
       lowercase: true,
       default: null,
     },
+    productID: {
+      type: Number,
+      default: null,
+    },
     projectName: {
       type: String,
       default: null,
