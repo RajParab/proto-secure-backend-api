@@ -5,21 +5,28 @@ const { toJSON, paginate } = require('./plugins');
 
 const dappContractSchema = mongoose.Schema(
   {
+    guid: {
+      type: String,
+      index: true,
+      unique: true,
+      lowercase: true,
+      default: null,
+    },
     projectName: {
       type: String,
-      default: null
+      default: null,
     },
-    email:{
+    email: {
       type: String,
-      default:null,
+      default: null,
     },
     logoURL: {
       type: String,
-      default: null
+      default: null,
     },
     bountyAmt: {
       type: Number,
-      required: true
+      required: true,
     },
     tokenSymbol: {
       type: String,
@@ -27,7 +34,7 @@ const dappContractSchema = mongoose.Schema(
     },
     transactionHash: {
       type: String,
-      default: null
+      default: null,
     },
     mediatator: {
       type: String,
@@ -35,7 +42,7 @@ const dappContractSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      required: true,
+      default: null,
     },
     contractAddress: {
       type: String,
@@ -43,8 +50,8 @@ const dappContractSchema = mongoose.Schema(
     },
     chainID: {
       type: Number,
-      default: null
-    }
+      default: null,
+    },
   },
   {
     timestamps: true,

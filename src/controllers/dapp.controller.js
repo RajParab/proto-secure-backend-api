@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { DappContract } = require('../models');
+const { generateGUID } = require('../helpers/CommonHelper');
 
 const PROJECT_STATUS = {
   ACTIVE: 'active',
@@ -21,11 +22,13 @@ const addProjectForm = catchAsync(async (req, res) => {
       return res.status(httpStatus.BAD_REQUEST).json({ message: 'Error: Invalid Form' });
     }
 
+    const guid = generateGUID();
     const findIfExists = await DappContract.find({ contractAddress: formData.contractAddress });
     if (findIfExists.length > 0) {
       return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Already exists' });
     }
     const createProject = await DappContract.create({
+      guid: guid,
       projectName: formData.projectName,
       logoURL: formData.logoURL,
       bountyAmt: formData.bountyAmt,
@@ -36,7 +39,7 @@ const addProjectForm = catchAsync(async (req, res) => {
     });
 
     if (createProject) {
-      return res.status(httpStatus.OK).json(contractAddress);
+      return res.status(httpStatus.OK).json(formData.contractAddress);
     }
   } catch (e) {
     console.log(e.message);
@@ -47,7 +50,7 @@ const updateDappForm = catchAsync(async (req, res) => {
   const chainID = req.params.chainID;
   const formData = req.body[0];
 
-  const status = formData.data.event.name;
+  const status = determineStatus(formData.data.event.name);
   if (!formData) {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'Error: Invalid Form' });
   }
@@ -74,14 +77,15 @@ const changeStatus = catchAsync(async (req, res) => {
   const status = determineStatus(contractBody.data.event.name);
   if (contractBody.data.transaction.txHash) {
     const udpateStatus = await DappContract.updateOne(
-      { transactionHash: contractBody.data.transaction.txHash, chainID: chainID },
+      { contractAddress: contractBody.data.event.contract.address, chainID: parseInt(chainID) },
       {
+        transactionHash: contractBody.data.transaction.txHash,
         status: status,
       }
     );
 
     if (udpateStatus) {
-      return req.status(httpStatus.OK).json({ message: 'Update Status Successfully' });
+      return res.status(httpStatus.OK).json({ message: 'Update Status Successfully' });
     }
   }
 });
