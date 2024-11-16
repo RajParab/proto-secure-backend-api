@@ -22,10 +22,10 @@ const addProjectForm = catchAsync(async (req, res) => {
     }
 
     const guid = generateGUID();
-    const findIfExists = await DappContract.find({ contractAddress: formData.contractAddress, chainID: formData.chainID });
-    if (findIfExists.length > 0) {
-      return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Already exists' });
-    }
+    // const findIfExists = await DappContract.find({ contractAddress: formData.contractAddress, chainID: formData.chainID });
+    // if (findIfExists.length > 0) {
+    //   return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Already exists' });
+    // }
     const createProject = await DappContract.create({
       guid: guid,
       projectName: formData.projectName,
