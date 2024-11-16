@@ -5,13 +5,6 @@ const { toJSON, paginate } = require('./plugins');
 
 const dappContractSchema = mongoose.Schema(
   {
-    guid: {
-      type: String,
-      index: true,
-      unique: true,
-      lowercase: true,
-      default: null
-    },
     projectName: {
       type: String,
       default: null

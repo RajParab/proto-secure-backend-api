@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { DappContract } = require('../models');
-const { generateGUID } = require('../helpers/CommonHelper');
 
 const PROJECT_STATUS = {
   ACTIVE: 'active',
@@ -22,24 +21,22 @@ const addProjectForm = catchAsync(async (req, res) => {
       return res.status(httpStatus.BAD_REQUEST).json({ message: 'Error: Invalid Form' });
     }
 
-    const findIfExists = await DappContract.find({ guid: formData.guid });
+    const findIfExists = await DappContract.find({ contractAddress: formData.contractAddress });
     if (findIfExists.length > 0) {
       return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Already exists' });
     }
-    const guid = generateGUID();
     const createProject = await DappContract.create({
-      guid: guid,
       projectName: formData.projectName,
       logoURL: formData.logoURL,
       bountyAmt: formData.bountyAmt,
       tokenSymbol: formData.tokenSymbol,
       mediatator: formData.mediatator,
-      status: formData.status,
       email: formData.email,
+      contractAddress: formData.contractAddress,
     });
 
     if (createProject) {
-      return res.status(httpStatus.OK).json(guid);
+      return res.status(httpStatus.OK).json(contractAddress);
     }
   } catch (e) {
     console.log(e.message);
@@ -47,19 +44,22 @@ const addProjectForm = catchAsync(async (req, res) => {
 });
 
 const updateDappForm = catchAsync(async (req, res) => {
-  const formData = req.body.formData;
+  const chainID = req.params.chainID;
+  const formData = req.body[0];
+
+  const status = formData.data.event.name;
   if (!formData) {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'Error: Invalid Form' });
   }
 
-  const findIfExists = await DappContract.find({ guid: formData.guid });
+  const findIfExists = await DappContract.find({ contractAddress: formData.data.event.contract.address });
   if (findIfExists.length == 0) {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Dowsnt exists' });
   }
 
   const updateForm = await DappContract.updateOne(
-    { guid: formData.guid },
-    { transactionHash: formData.transactionHash, contractAddress: formData.contractAddress, chainID: formData.chainID }
+    { contractAddress: formData.data.event.contract.address },
+    { transactionHash: formData.data.transaction.txHash, chainID: chainID, status: status }
   );
 
   if (updateForm) {
@@ -68,13 +68,15 @@ const updateDappForm = catchAsync(async (req, res) => {
 });
 
 const changeStatus = catchAsync(async (req, res) => {
-  const contractBody = req.body.contractBody;
+  const contractBody = req.body[0];
+  const chainID = req.params.chainID;
 
-  if (contractBody.transactionHash) {
+  const status = determineStatus(contractBody.data.event.name);
+  if (contractBody.data.transaction.txHash) {
     const udpateStatus = await DappContract.updateOne(
-      { transactionHash: contractBody },
+      { transactionHash: contractBody.data.transaction.txHash, chainID: chainID },
       {
-        status: contractBody.status,
+        status: status,
       }
     );
 
@@ -94,6 +96,14 @@ const listDapps = catchAsync(async (req, res) => {
   const findprojects = await DappContract.find();
   return res.status(httpStatus.OK).json(findprojects);
 });
+
+const determineStatus = (functionName) => {
+  if (functionName == 'ProtocolRegistered' || functionName == 'ResolutionCompleted') {
+    return PROJECT_STATUS.ACTIVE;
+  } else if (functionName == 'SecurityAlertRaised') {
+    return PROJECT_STATUS.SUSPENDED;
+  }
+};
 
 module.exports = {
   addProjectForm,
