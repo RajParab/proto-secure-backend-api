@@ -54,7 +54,7 @@ const updateDappForm = catchAsync(async (req, res) => {
   const status = determineStatus(formData.data.event.name);
   let contractAddress = '';
   if (status == PROJECT_STATUS.ACTIVE) {
-    contractAddress = formData.data.event.input[1].value;
+    contractAddress = formData.data.event.inputs[1].value;
   } else if (status == PROJECT_STATUS.SUSPENDED) {
     contractAddress = formData.data.event.contract.address;
   }
