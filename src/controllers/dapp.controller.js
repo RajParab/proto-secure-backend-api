@@ -52,13 +52,12 @@ const updateDappForm = catchAsync(async (req, res) => {
 
   console.log(formData);
   const status = determineStatus(formData.data.event.name);
-  if (!formData) {
-    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Error: Invalid Form' });
-  }
 
   const contractAddress = formData.data.event.inputs[1].value;
+  console.log(contractAddress)
   const findIfExists = await DappContract.find({ contractAddress: contractAddress.toLowerCase() });
   if (findIfExists.length == 0) {
+    console.log("Project not extist");
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Dowsnt exists' });
   }
 
