@@ -7,6 +7,12 @@ const PROJECT_STATUS = {
   INACTIVE: 'inactive',
 };
 
+const MAINTAINER_ENUM = {
+  GOV: 'gov',
+  SEAL911: 'seal_911',
+  PROTO_SECURE: 'proto_secure',
+};
+
 const addProjectForm = catchAsync(async (req, res) => {
   try {
     const formData = req.body.formData;
