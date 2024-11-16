@@ -49,7 +49,7 @@ const addProjectForm = catchAsync(async (req, res) => {
 
 const updateDappForm = catchAsync(async (req, res) => {
   const chainID = req.params.chainID;
-  const formData = req.body;
+  const formData = req.body[0];
 
   console.log(formData);
   const status = determineStatus(formData.data.event.name);
@@ -73,7 +73,7 @@ const updateDappForm = catchAsync(async (req, res) => {
 });
 
 const changeStatus = catchAsync(async (req, res) => {
-  const contractBody = req.body;
+  const contractBody = req.body[0];
   const chainID = req.params.chainID;
 
   console.log(contractBody);
