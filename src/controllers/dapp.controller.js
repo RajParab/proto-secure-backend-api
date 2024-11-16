@@ -36,6 +36,7 @@ const addProjectForm = catchAsync(async (req, res) => {
       mediatator: formData.mediatator,
       email: formData.email,
       contractAddress: formData.contractAddress,
+      chainID: formData.chainID,
     });
 
     if (createProject) {
@@ -48,8 +49,9 @@ const addProjectForm = catchAsync(async (req, res) => {
 
 const updateDappForm = catchAsync(async (req, res) => {
   const chainID = req.params.chainID;
-  const formData = req.body[0];
+  const formData = req.body;
 
+  console.log(formData);
   const status = determineStatus(formData.data.event.name);
   if (!formData) {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'Error: Invalid Form' });
@@ -61,8 +63,8 @@ const updateDappForm = catchAsync(async (req, res) => {
   }
 
   const updateForm = await DappContract.updateOne(
-    { contractAddress: formData.data.event.contract.address },
-    { transactionHash: formData.data.transaction.txHash, chainID: chainID, status: status }
+    { contractAddress: formData.data.event.contract.address, chainID: chainID },
+    { transactionHash: formData.data.transaction.txHash, status: status }
   );
 
   if (updateForm) {
@@ -71,9 +73,10 @@ const updateDappForm = catchAsync(async (req, res) => {
 });
 
 const changeStatus = catchAsync(async (req, res) => {
-  const contractBody = req.body[0];
+  const contractBody = req.body;
   const chainID = req.params.chainID;
 
+  console.log(contractBody);
   const status = determineStatus(contractBody.data.event.name);
   if (contractBody.data.transaction.txHash) {
     const udpateStatus = await DappContract.updateOne(
