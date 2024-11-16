@@ -1,7 +1,8 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
-const { DappContract } = require('../models');
+const { DappContract, Comment } = require('../models');
 const { generateGUID } = require('../helpers/CommonHelper');
+const { http } = require('winston');
 
 const APP_ID = process.env.NILLION_APP_ID;
 const USER_SEED = process.env.NILLION_USER_SEED; // generates a deterministic nillion user id; use any string
@@ -55,7 +56,7 @@ const updateDappForm = catchAsync(async (req, res) => {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'Error: Invalid Form' });
   }
 
-  const contractAddress = formData.data.event.inputs[1].value
+  const contractAddress = formData.data.event.inputs[1].value;
   const findIfExists = await DappContract.find({ contractAddress: contractAddress });
   if (findIfExists.length == 0) {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Dowsnt exists' });
@@ -76,7 +77,7 @@ const changeStatus = catchAsync(async (req, res) => {
   const chainID = req.params.chainID;
 
   console.log(contractBody);
-  const contractAddress = formData.data.event.inputs[1].value
+  const contractAddress = formData.data.event.inputs[1].value;
   const status = determineStatus(contractBody.data.event.name);
   if (contractBody.data.transaction.txHash) {
     const udpateStatus = await DappContract.updateOne(
@@ -108,8 +109,6 @@ const addDeploymentComment = catchAsync(async (req, res) => {
   const comment = req.body.comment;
   const contractAddress = req.body.contractAddress;
 
-  // 3. Store second secret (string/blob)
-  console.log('\nStoring second secret...');
   const storeResult2 = await fetch(`${API_BASE}/api/apps/${APP_ID}/secrets`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -127,21 +126,22 @@ const addDeploymentComment = catchAsync(async (req, res) => {
       },
     }),
   }).then((res) => res.json());
-  console.log('Second secret stored at:', storeResult2);
+
+  const createComment = await Comment.create({ storeID: storeResult2.store_id, contractAddress: contractAddress });
+  if (createComment) {
+    return res.status(httpStatus.OK).json('Stored Successfully');
+  }
 });
 
 const retrieveDeploymentComment = catchAsync(async (req, res) => {
   const contractAddress = req.body.contractAddress;
-  const storeIds = await fetch(`${API_BASE}/api/apps/${APP_ID}/store_ids`)
-    .then((res) => res.json())
-    .then((data) => data.store_ids);
+  const findComment = await Comment.findOne({ contractAddress: contractAddress });
 
-  // 5. Retrieve both secrets using the store IDs we just created
-  console.log('\nRetrieving secrets...');
   const secret1 = await fetch(
-    `${API_BASE}/api/secret/retrieve/${storeIds[0].store_id}?retrieve_as_nillion_user_seed=${USER_SEED}&secret_name=${contractAddress}`
+    `${API_BASE}/api/secret/retrieve/${findComment.storeID}?retrieve_as_nillion_user_seed=${USER_SEED}&secret_name=${contractAddress}`
   ).then((res) => res.json());
-  console.log('First secret retrieved:', secret1);
+
+  return res.status(httpStatus.OK).json(secret1.secret);
 });
 
 const determineStatus = (functionName) => {
