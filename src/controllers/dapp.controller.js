@@ -3,16 +3,14 @@ const catchAsync = require('../utils/catchAsync');
 const { DappContract } = require('../models');
 const { generateGUID } = require('../helpers/CommonHelper');
 
+const APP_ID = process.env.NILLION_APP_ID;
+const USER_SEED = process.env.NILLION_USER_SEED; // generates a deterministic nillion user id; use any string
+const API_BASE = 'https://nillion-storage-apis-v0.onrender.com';
+
 const PROJECT_STATUS = {
   ACTIVE: 'active',
   SUSPENDED: 'suspended',
   RETIRED: 'retired',
-};
-
-const MAINTAINER_ENUM = {
-  GOV: 'gov',
-  SEAL911: 'seal_911',
-  PROTO_SECURE: 'proto_secure',
 };
 
 const addProjectForm = catchAsync(async (req, res) => {
@@ -106,6 +104,46 @@ const listDapps = catchAsync(async (req, res) => {
   return res.status(httpStatus.OK).json(findprojects);
 });
 
+const addDeploymentComment = catchAsync(async (req, res) => {
+  const comment = req.body.comment;
+  const contractAddress = req.body.contractAddress;
+
+  // 3. Store second secret (string/blob)
+  console.log('\nStoring second secret...');
+  const storeResult2 = await fetch(`${API_BASE}/api/apps/${APP_ID}/secrets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      secret: {
+        nillion_seed: USER_SEED,
+        secret_value: comment,
+        secret_name: contractAddress,
+      },
+      permissions: {
+        retrieve: [],
+        update: [],
+        delete: [],
+        compute: {},
+      },
+    }),
+  }).then((res) => res.json());
+  console.log('Second secret stored at:', storeResult2);
+});
+
+const retrieveDeploymentComment = catchAsync(async (req, res) => {
+  const contractAddress = req.body.contractAddress;
+  const storeIds = await fetch(`${API_BASE}/api/apps/${APP_ID}/store_ids`)
+    .then((res) => res.json())
+    .then((data) => data.store_ids);
+
+  // 5. Retrieve both secrets using the store IDs we just created
+  console.log('\nRetrieving secrets...');
+  const secret1 = await fetch(
+    `${API_BASE}/api/secret/retrieve/${storeIds[0].store_id}?retrieve_as_nillion_user_seed=${USER_SEED}&secret_name=${contractAddress}`
+  ).then((res) => res.json());
+  console.log('First secret retrieved:', secret1);
+});
+
 const determineStatus = (functionName) => {
   if (functionName == 'ProtocolRegistered' || functionName == 'ResolutionCompleted') {
     return PROJECT_STATUS.ACTIVE;
@@ -119,4 +157,6 @@ module.exports = {
   updateDappForm,
   listDapps,
   changeStatus,
+  addDeploymentComment,
+  retrieveDeploymentComment,
 };
