@@ -53,26 +53,22 @@ const updateDappForm = catchAsync(async (req, res) => {
   console.log(formData);
   const status = determineStatus(formData.data.event.name);
   let contractAddress = '';
-  if (status == PROJECT_STATUS.ACTIVE) {
+
+  if (formData.data.event.name == 'ProtocolRegistered') {
     contractAddress = formData.data.event.inputs[1].value;
-  } else if (status == PROJECT_STATUS.SUSPENDED) {
-    contractAddress = formData.data.event.contract.address;
-  }
-  console.log(contractAddress);
-  const findIfExists = await DappContract.find({ contractAddress: contractAddress.toLowerCase() });
-  if (findIfExists.length == 0) {
-    console.log('Project not extist');
-    return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Dowsnt exists' });
+    await DappContract.updateOne(
+      { contractAddress: contractAddress.toLowerCase(), chainID: chainID },
+      { transactionHash: formData.data.transaction.txHash, status: status, productID: formData.data.event.inputs[0].value }
+    );
+  } else {
+    const productID = formData.data.event.inputs[0].value;
+    await DappContract.updateOne(
+      { productID: productID, chainID: chainID },
+      { transactionHash: formData.data.transaction.txHash, status: status }
+    );
   }
 
-  const updateForm = await DappContract.updateOne(
-    { contractAddress: contractAddress.toLowerCase(), chainID: chainID },
-    { transactionHash: formData.data.transaction.txHash, status: status, productID: formData.data.event.inputs[0].value }
-  );
-
-  if (updateForm) {
-    return res.status(httpStatus.OK).json({ message: 'Update Succuessful' });
-  }
+  return res.status(httpStatus.OK).json({ message: 'Update Succuessful' });
 });
 
 const changeStatus = catchAsync(async (req, res) => {
