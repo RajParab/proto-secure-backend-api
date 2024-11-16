@@ -32,14 +32,14 @@ const addProjectForm = catchAsync(async (req, res) => {
       logoURL: formData.logoURL,
       bountyAmt: formData.bountyAmt,
       tokenSymbol: formData.tokenSymbol,
-      mediatator: formData.mediatator,
+      mediatator: formData.mediatator.toLowerCase(),
       email: formData.email,
-      contractAddress: formData.contractAddress,
+      contractAddress: formData.contractAddress.toLowerCase(),
       chainID: formData.chainID,
     });
 
     if (createProject) {
-      return res.status(httpStatus.OK).json(formData.contractAddress);
+      return res.status(httpStatus.OK).json(formData.contractAddress.toLowerCase());
     }
   } catch (e) {
     console.log(e.message);
@@ -57,13 +57,13 @@ const updateDappForm = catchAsync(async (req, res) => {
   }
 
   const contractAddress = formData.data.event.inputs[1].value;
-  const findIfExists = await DappContract.find({ contractAddress: contractAddress });
+  const findIfExists = await DappContract.find({ contractAddress: contractAddress.toLowerCase() });
   if (findIfExists.length == 0) {
     return res.status(httpStatus.BAD_REQUEST).json({ message: 'ERROR: Project Dowsnt exists' });
   }
 
   const updateForm = await DappContract.updateOne(
-    { contractAddress: contractAddress, chainID: chainID },
+    { contractAddress: contractAddress.toLowerCase(), chainID: chainID },
     { transactionHash: formData.data.transaction.txHash, status: status, productID: formData.data.event.inputs[0].value }
   );
 
@@ -81,7 +81,7 @@ const changeStatus = catchAsync(async (req, res) => {
   const status = determineStatus(contractBody.data.event.name);
   if (contractBody.data.transaction.txHash) {
     const udpateStatus = await DappContract.updateOne(
-      { contractAddress: contractAddress, chainID: parseInt(chainID) },
+      { contractAddress: contractAddress.toLowerCase(), chainID: parseInt(chainID) },
       {
         transactionHash: contractBody.data.transaction.txHash,
         status: status,
@@ -107,7 +107,7 @@ const listDapps = catchAsync(async (req, res) => {
 
 const addDeploymentComment = catchAsync(async (req, res) => {
   const comment = req.body.comment;
-  const contractAddress = req.body.contractAddress;
+  const contractAddress = req.body.contractAddress.toLowerCase();
 
   const storeResult2 = await fetch(`${API_BASE}/api/apps/${APP_ID}/secrets`, {
     method: 'POST',
@@ -134,7 +134,7 @@ const addDeploymentComment = catchAsync(async (req, res) => {
 });
 
 const retrieveDeploymentComment = catchAsync(async (req, res) => {
-  const contractAddress = req.body.contractAddress;
+  const contractAddress = req.body.contractAddress.toLowerCase();
   const findComment = await Comment.findOne({ contractAddress: contractAddress });
 
   const secret1 = await fetch(
