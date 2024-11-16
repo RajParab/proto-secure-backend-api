@@ -53,7 +53,7 @@ const updateDappForm = catchAsync(async (req, res) => {
   console.log(formData);
   const status = determineStatus(formData.data.event.name);
 
-  const contractAddress = formData.data.event.inputs[1].value;
+  const contractAddress = formData.data.event.contract.address;
   console.log(contractAddress)
   const findIfExists = await DappContract.find({ contractAddress: contractAddress.toLowerCase() });
   if (findIfExists.length == 0) {
@@ -76,7 +76,7 @@ const changeStatus = catchAsync(async (req, res) => {
   const chainID = req.params.chainID;
 
   console.log(contractBody);
-  const contractAddress = formData.data.event.inputs[1].value;
+  const contractAddress = contractBody.data.event.contract.address;
   const status = determineStatus(contractBody.data.event.name);
   if (contractBody.data.transaction.txHash) {
     const udpateStatus = await DappContract.updateOne(
